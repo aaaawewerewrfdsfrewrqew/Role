@@ -1,0 +1,126 @@
+@host = http://localhost:5080
+
+### Реєстрація (повертає JWT)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "ivan",
+  "email": "ivan@example.com",
+  "password": "Passw0rd!"
+}
+
+### Логін звичайного користувача
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "ivan",
+  "password": "Passw0rd!"
+}
+
+### Логін адміна (seed з appsettings.json)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin123!"
+}
+
+### Що в токені (підставте свій токен)
+GET {{host}}/api/auth/me
+Authorization: Bearer YOUR_TOKEN
+
+### Список ролей (потрібен токен ADMIN)
+GET {{host}}/api/roles
+Authorization: Bearer YOUR_ADMIN_TOKEN
+
+### Створити роль
+POST {{host}}/api/roles
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{ "name": "manager" }
+
+### Дублікат -> 409 Conflict
+POST {{host}}/api/roles
+Authorization: Bearer YOUR_ADMIN_TOKEN
+Content-Type: application/json
+
+{ "name": "MANAGER" }
+
+### ===== Керування акаунтом =====
+
+### Зміна пароля (авторизований)
+POST {{host}}/api/account/change-password
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{
+  "currentPassword": "Passw0rd!",
+  "newPassword": "NewPassw0rd!"
+}
+
+### Забув пароль: надсилає лист (у режимі Log посилання буде в Output/консолі)
+POST {{host}}/api/account/forgot-password
+Content-Type: application/json
+
+{ "email": "ivan@example.com" }
+
+### Скидання пароля за токеном з посилання (або відкрийте посилання з листа в браузері)
+POST {{host}}/api/account/reset-password
+Content-Type: application/json
+
+{
+  "token": "TOKEN_FROM_EMAIL",
+  "newPassword": "BrandNewPassw0rd!"
+}
+
+### Запит на зміну email (лист піде на нову адресу)
+POST {{host}}/api/account/change-email
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{
+  "newEmail": "ivan.new@example.com",
+  "password": "Passw0rd!"
+}
+
+### Підтвердження зміни email
+POST {{host}}/api/account/confirm-email-change
+Content-Type: application/json
+
+{ "token": "TOKEN_FROM_EMAIL" }
+
+### ===== Дата народження та привітання =====
+
+### Реєстрація з датою народження і підпискою
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "olena",
+  "email": "olena@example.com",
+  "password": "Passw0rd!",
+  "birthDate": "1995-10-26",
+  "isSubscribed": true
+}
+
+### Профіль
+GET {{host}}/api/account/profile
+Authorization: Bearer YOUR_TOKEN
+
+### Змінити дату народження / підписку (isSubscribed=false — відписатися)
+PUT {{host}}/api/account/profile
+Authorization: Bearer YOUR_TOKEN
+Content-Type: application/json
+
+{
+  "birthDate": "1995-10-26",
+  "isSubscribed": true
+}
+
+### Запустити розсилку привітань вручну (ADMIN) — для тесту
+POST {{host}}/api/admin/birthdays/run
+Authorization: Bearer YOUR_ADMIN_TOKEN

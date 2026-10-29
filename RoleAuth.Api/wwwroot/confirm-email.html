@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Підтвердження email</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f3f4f6; display: flex; justify-content: center; padding: 48px 16px; }
+    .card { background: #fff; padding: 32px; border-radius: 10px; width: 100%; max-width: 380px; box-shadow: 0 2px 10px rgba(0,0,0,.08); text-align: center; }
+    h1 { font-size: 20px; margin-top: 0; }
+    button { margin-top: 12px; width: 100%; padding: 12px; border: 0; border-radius: 6px; background: #2563eb; color: #fff; font-size: 15px; cursor: pointer; }
+    button:disabled { opacity: .6; cursor: default; }
+    #msg { margin-top: 16px; font-size: 14px; }
+    .ok { color: #15803d; } .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Підтвердження нового email</h1>
+    <p>Натисніть кнопку, щоб підтвердити зміну пошти.</p>
+    <button id="btn">Підтвердити email</button>
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    const token = new URLSearchParams(location.search).get('token');
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('btn');
+
+    function show(text, ok) { msg.textContent = text; msg.className = ok ? 'ok' : 'err'; }
+
+    if (!token) { show('Недійсне посилання: відсутній токен.', false); btn.disabled = true; }
+
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      try {
+        const r = await fetch('/api/account/confirm-email-change', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok) { show(data.message || 'Готово', true); return; }
+        show(data.detail || 'Сталася помилка', false);
+      } catch { show('Не вдалося зв\u2019язатися із сервером.', false); }
+      btn.disabled = false;
+    });
+  </script>
+</body>
+</html>
